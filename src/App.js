@@ -1,11 +1,13 @@
-import { SignIn } from "./screen";
 import { Route,Routes } from "react-router-dom";
+import { SignIn } from "./screen/SignIn";
 
 function App() {
   return (
     <div>
       <Routes>
-        <Route path='/' element={<SignIn />}/>
+      <Route path="/" element={user?<SignIn/>:<Navigate to={'home'} replace/>}/>
+      <Route path="/signup" element={<SignUp/>}/>
+
       </Routes>
     </div>
   );
