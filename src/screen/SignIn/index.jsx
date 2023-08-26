@@ -21,6 +21,7 @@ export const SignIn=()=>{
         navigate('home')
     }
 
+    console.log("errors :" ,errors)
 
     return <div>
         <form onSubmit={handleSubmit(onSubmit)}>
