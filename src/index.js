@@ -5,15 +5,30 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { UserProvidor } from './context/User';
 import { BrowserRouter as Route } from 'react-router-dom';
+import { QueryClient,QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient ({
+  defaultOptions:{
+
+    queries:{
+      cacheTime:1000*60*60*24,
+    },
+  },
+})
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
     <Route>
     <UserProvidor>
+
     <App />
+    
+
     </UserProvidor>
     </Route>
+    </QueryClientProvider>
   </React.StrictMode>
 );
 

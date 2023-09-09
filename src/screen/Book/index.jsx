@@ -1,158 +1,91 @@
-import { useEffect, useState } from "react"
-import { createBook, getBooks } from "../../Services/Book";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { createBookSchema } from "../../schemas/createBook.schemas";
-import {Input} from '../../components/shared/Input';
-import {Label} from '../../components/shared/Label'
+import { createBook, deleteBook, getBooks } from "../../Services/Book";
+import { useQuery } from "react-query";
+import { useState } from "react";
+import { CreateDialog } from "../../components/CreateDialog";
+import { DeleteDialog } from "../../components/DeleteDialog";
 
 
 export const Book = () =>{
 
-const [isLoading,setIsLoading]=useState(false);
-const [isError,setIsError]=useState(null);
-const [books, setBooks]= useState([]);
+  const {data,isLoading,isError,refetch,isRefetching}=useQuery({
+    queryFn:()=>getBooks(),
+    queryKey:["books"],
+    staleTime: Infinity
 
-const [showCreatePopup, setShowCreatePopup] = useState(false);
-
-const [newBook, setNewBook] = useState({
-    title: '',
-    author: '',
-    description: '',
-});
-
-
-
-const handleCreate = async () => {
-    try { 
-      setShowCreatePopup(true);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleSubmit = async () => {
-    const validation = await trigger();
-    const data = getValues();
-
-if(validation){
-    try {
-      const createdBook = await createBook(data);
-
-     
-      setBooks((oldBooks) => [...oldBooks, createdBook]);      
-      setShowCreatePopup(false);
-
-    
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  };
-
-  const {formState:{errors},register,trigger,getValues}=useForm({
-    resolver:yupResolver(createBookSchema)
   })
 
+  const [open,setOpen]= useState(false);
+  const [mode, setMode]= useState("create");
+  const [selectedItem, setSelectedItem]= useState(null);
+  const [isDelete, setIsDelete]= useState(false);
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-        try {
-            setIsLoading(true);
-            const fetchedBooks = await getBooks();
-            console.log("Fetched Books:", fetchedBooks);
-            setIsLoading(false);
-            setBooks(fetchedBooks); 
-        } catch (err) {
-            setIsError(err);
-        }
-    };
-
-    fetchBooks(); 
-
-}, []);
-
-
-
-//Error handling
-if(isLoading){
-    return <div>Loading...</div>
+  const handleDelete=(item)=>{
+    setSelectedItem(item);
+    setIsDelete(true)
 }
+ 
+//ERROR HANDELING
+if(isLoading || isRefetching){
+  return <div role="status" className='h-screen flex items-center justify-center'>
+  <svg aria-hidden="true" className="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+      <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+  </svg>
 
-if(isError){
-    return <div>Error occured while retrieving data</div>
+</div>
 }
-
-
+if(data?.data?.length===0){
+  return <div className='h-screen flex flex-col space-y-6 items-center justify-center'>
+      <h1 className='text-lg'>
+      You have not created any books yet...
+      </h1>
+      <button onClick={()=>{
+          setMode('create');
+          setOpen(true);
+      }} className='px-4 py-2 rounded-md bg-blue-500 text-white hover:text-gray-100 w-48 '>Create a new book</button>
+      <CreateDialog refetch={refetch} open={open} onClose={()=>setOpen(false)}/>
+  
+  </div>
+}
+     if(isError){
+        return <div>Error occured while retrieving data</div>
+    }
 
     return (
         <div>
           <div className="flex justify-center">
-        <button onClick={handleCreate} className="bg-gradient-to-r from-green-500 to-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-7">
+        <button onClick={()=>
+          {
+            setOpen(true)
+           setMode("create");
+          }}  
+          className="bg-gradient-to-r from-green-500 to-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-7" >
           Create Book
         </button>
   </div>
-        {showCreatePopup && (
-          <div className="fixed top-0 left-0 flex items-center justify-center w-screen h-screen bg-gray-800 bg-opacity-50">
-            <div className="bg-white p-6 rounded shadow-lg">
-              <Label className="text-xl font-semibold mb-4 ">Create New Book</Label>
-              <Input
-              {...register('title')}
-                type="text"
-                placeholder="Title"
-                className="w-full border p-2 mb-2"
-                value={newBook.title}
-                onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
-              />
-              <p className="text-red-700">{errors?.title?.message}</p>
-              <Input
-              {...register('author')}
-                type="text"
-                placeholder="Author"
-                className="w-full border p-2 mb-2"
-                value={newBook.author}
-                onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
-              />
-              <p className="text-red-700">{errors?.author?.message}</p>
-
-              <textarea
-              {...register('description')}
-                placeholder="Description"
-                className="w-full border p-2 mb-4"
-                rows="4"
-                value={newBook.description}
-                onChange={(e) => setNewBook({ ...newBook, description: e.target.value })}
-              />
-              <div className="flex justify-end">
-                <button
-                  onClick={handleSubmit}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2"
-                >
-                  Create
-                </button>
-                <button
-                  onClick={() => setShowCreatePopup(false)}
-                  className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+     
   
-{
-            books?.data?.map((book)=>{
-                const {id,title, author, description}= book;
-                return (<div><div key={id} className='flex flex-col space-y-2 w-48 h-32 rounded-md'>
-                <h2>{title}</h2>
-                <p>{author}</p>
-                <p>{description}</p>
-            </div>
-            {/* {Buttons for delete and edit } */}
-             </div>)
-            })} 
+  {data?.data?.map((book)=>{
+                return (
+                    <div>
+                        <img src={book.image} alt={book.title} />
+                        <h2>{book.title}</h2>
+                        <p>{book.description}</p>
+                        <p>{book.author}</p>
+                        <button onClick={()=>handleDelete(book)} className='px-4 py-2 rounded-md bg-red-500 text-white hover:text-gray-100 w-48 self-end'>Delete</button>
+                        <button onClick={()=>{
+                             setMode("edit");
+                             setOpen(true);
+                             setSelectedItem(book)
+                        }}>Edit</button>
+                    </div>
+                    
+                );
+            })}
+            <CreateDialog refetch={refetch} open={open} onClose={()=>setOpen(false)} />
+            <DeleteDialog open={isDelete} onClose={()=>setIsDelete(false)} refetch={refetch} item={selectedItem}/>
+
       </div>
+      
     )
 }
