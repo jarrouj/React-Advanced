@@ -17,7 +17,7 @@ export const AppDialog = ({ trigger, children, onClose, ...rest }) => {
                                 className="inline-flex items-center justify-center absolute top-6 right-6 rounded-full hover:bg-gray-300 hover:text-gray-700 w-6 h-6"
                                 aria-label="Close"
                             >
-                                {/* <HiXMark /> */}
+                                {/* <HiXMark /> */} x
                             </button>
                         </Dialog.Close>
                     </Dialog.Content>

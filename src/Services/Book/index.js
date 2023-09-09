@@ -20,21 +20,24 @@ export const getBook = async(id)=>{
 
 export const createBook = async (newBook) => {
     try {
-        return await api.post('/books', newBook);
+        return await api.post('/books/', newBook);
        
     } catch (err) {
         console.log(err);
-        throw err; 
+    
     }
 }
 
 
-export const editBook =async(id,updatedBook) =>{
-     
+export const editBook=async(data)=>{
     try{
-        return await api.put(`/books/${id}`,updatedBook);
+        return await api.put(`/books/${data.id}`,{
+            title: data.data.title,
+            author: data.data.author,
+            description: data.data.apidescription,
+        })
     }catch(err){
-        console.log(err);
+        console.log(err)
     }
 }
 
